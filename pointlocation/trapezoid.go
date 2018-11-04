@@ -14,6 +14,7 @@ type trapezoid struct {
 	lowerLeftN  *trapezoid
 	upperRightN *trapezoid
 	lowerRightN *trapezoid
+	dagRef      *node
 }
 
 func (t trapezoid) String() string {
@@ -229,8 +230,8 @@ func (t trapezoid) addSegmentInside(s segment) (ts []trapezoid) {
 	rt.upperLeftN = &ut
 	rt.lowerLeftN = &bt
 
-	bt.upperLeftN = &lt
-	bt.upperRightN = &rt
+	bt.lowerLeftN = &lt
+	bt.lowerRightN = &rt
 
 	ts = append(ts, lt)
 	ts = append(ts, ut)
@@ -247,4 +248,59 @@ func (t trapezoid) addSegment(s segment) (ts []trapezoid) {
 	}
 
 	return
+}
+
+func boundingBox(ss []segment) (tr trapezoid) {
+	boundingBoxTop := point{x: ss[0].maxX(), y: ss[0].maxY()}
+	boundingBoxBot := point{x: ss[0].minX(), y: ss[0].minY()}
+	index := 1
+	for _ = range ss[1:] {
+		if ss[index].maxX() > boundingBoxTop.x {
+			boundingBoxTop.x = ss[index].maxX()
+		}
+		if ss[index].maxY() > boundingBoxTop.y {
+			boundingBoxTop.y = ss[index].maxY()
+		}
+		if ss[index].minX() > boundingBoxBot.x {
+			boundingBoxBot.x = ss[index].minX()
+		}
+		if ss[index].minY() > boundingBoxBot.y {
+			boundingBoxBot.y = ss[index].minY()
+		}
+	}
+	boundingBoxTop.x += 5
+	boundingBoxTop.y += 5
+	boundingBoxBot.x -= 5
+	boundingBoxBot.y -= 5
+
+	bounderyTopSegment := newSegment(
+		point{x: boundingBoxBot.x, y: boundingBoxTop.y},
+		boundingBoxTop,
+	)
+
+	bounderyBotSegment := newSegment(
+		boundingBoxBot,
+		point{x: boundingBoxTop.x, y: boundingBoxBot.y},
+	)
+
+	tr = trapezoid{
+		leftp:  &boundingBoxBot,
+		rightp: &point{x: boundingBoxTop.x, y: boundingBoxBot.y},
+		top:    &bounderyTopSegment,
+		bottom: &bounderyBotSegment,
+	}
+	return
+}
+
+// implementation of node interface
+func (trapezoid) check(i point) node {
+	return nil
+}
+
+func (*trapezoid) leftChild() node {
+	return nil
+}
+
+func (*trapezoid) rightChild() node {
+	return nil
 }

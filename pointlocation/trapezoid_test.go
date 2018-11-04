@@ -261,8 +261,8 @@ func Test_trapezoid_addSegmentInside(t *testing.T) {
 	rp := point{5, 0}
 	inputStart := point{2, 2}
 	inputEnd := point{4, 3}
-	bounderyTopSegment := newSegment(lp, point{5, 5})
-	bounderyBotSegment := newSegment(point{0, 0}, rp)
+	bounderyTopSegment := newSegment(point{x: lp.x, y: 5}, point{5, 5})
+	bounderyBotSegment := newSegment(lp, rp)
 	input := newSegment(inputStart, inputEnd)
 
 	lt := trapezoid{
