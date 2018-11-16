@@ -7,23 +7,23 @@ import (
 
 func Test_trapezoid_topSegment(t *testing.T) {
 	type fields struct {
-		leftp  *point
-		rightp *point
-		top    *segment
-		bottom *segment
+		leftp  *Point
+		rightp *Point
+		top    *Segment
+		bottom *Segment
 	}
-	bounderyTopSegment := newSegment(point{0, 5}, point{5, 5})
-	bounderyBotSegment := newSegment(point{0, 0}, point{5, 0})
+	bounderyTopSegment := NewSegment(Point{x: 0, y: 5}, Point{x: 5, y: 5})
+	bounderyBotSegment := NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0})
 	tests := []struct {
 		name   string
 		fields fields
-		want   segment
+		want   Segment
 	}{
 		{
 			name: "boundery",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
@@ -47,23 +47,23 @@ func Test_trapezoid_topSegment(t *testing.T) {
 
 func Test_trapezoid_bottomSegment(t *testing.T) {
 	type fields struct {
-		leftp  *point
-		rightp *point
-		top    *segment
-		bottom *segment
+		leftp  *Point
+		rightp *Point
+		top    *Segment
+		bottom *Segment
 	}
-	bounderyTopSegment := newSegment(point{0, 5}, point{5, 5})
-	bounderyBotSegment := newSegment(point{0, 0}, point{5, 0})
+	bounderyTopSegment := NewSegment(Point{x: 0, y: 5}, Point{x: 5, y: 5})
+	bounderyBotSegment := NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0})
 	tests := []struct {
 		name   string
 		fields fields
-		want   segment
+		want   Segment
 	}{
 		{
 			name: "boundery",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
@@ -87,27 +87,27 @@ func Test_trapezoid_bottomSegment(t *testing.T) {
 
 func Test_trapezoid_leftSegment(t *testing.T) {
 	type fields struct {
-		leftp  *point
-		rightp *point
-		top    *segment
-		bottom *segment
+		leftp  *Point
+		rightp *Point
+		top    *Segment
+		bottom *Segment
 	}
-	bounderyTopSegment := newSegment(point{0, 5}, point{5, 5})
-	bounderyBotSegment := newSegment(point{0, 0}, point{5, 0})
+	bounderyTopSegment := NewSegment(Point{x: 0, y: 5}, Point{x: 5, y: 5})
+	bounderyBotSegment := NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0})
 	tests := []struct {
 		name   string
 		fields fields
-		want   segment
+		want   Segment
 	}{
 		{
 			name: "boundery",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
-			want: newSegment(point{0, 5}, point{0, 0}),
+			want: NewSegment(Point{x: 0, y: 5}, Point{x: 0, y: 0}),
 		},
 	}
 	for _, tt := range tests {
@@ -127,27 +127,27 @@ func Test_trapezoid_leftSegment(t *testing.T) {
 
 func Test_trapezoid_rightSegment(t *testing.T) {
 	type fields struct {
-		leftp  *point
-		rightp *point
-		top    *segment
-		bottom *segment
+		leftp  *Point
+		rightp *Point
+		top    *Segment
+		bottom *Segment
 	}
-	bounderyTopSegment := newSegment(point{0, 5}, point{5, 5})
-	bounderyBotSegment := newSegment(point{0, 0}, point{5, 0})
+	bounderyTopSegment := NewSegment(Point{x: 0, y: 5}, Point{x: 5, y: 5})
+	bounderyBotSegment := NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0})
 	tests := []struct {
 		name   string
 		fields fields
-		want   segment
+		want   Segment
 	}{
 		{
 			name: "boundery",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
-			want: newSegment(point{5, 5}, point{5, 0}),
+			want: NewSegment(Point{x: 5, y: 5}, Point{x: 5, y: 0}),
 		},
 	}
 	for _, tt := range tests {
@@ -167,16 +167,16 @@ func Test_trapezoid_rightSegment(t *testing.T) {
 
 func Test_trapezoid_pointInTrapezoid(t *testing.T) {
 	type fields struct {
-		leftp  *point
-		rightp *point
-		top    *segment
-		bottom *segment
+		leftp  *Point
+		rightp *Point
+		top    *Segment
+		bottom *Segment
 	}
 	type args struct {
-		p point
+		p Point
 	}
-	bounderyTopSegment := newSegment(point{0, 5}, point{5, 5})
-	bounderyBotSegment := newSegment(point{0, 0}, point{5, 0})
+	bounderyTopSegment := NewSegment(Point{x: 0, y: 5}, Point{x: 5, y: 5})
+	bounderyBotSegment := NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0})
 	tests := []struct {
 		name   string
 		fields fields
@@ -186,45 +186,45 @@ func Test_trapezoid_pointInTrapezoid(t *testing.T) {
 		{
 			name: "boundery",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
-			args:  args{point{1, 1}},
+			args:  args{Point{x: 1, y: 1}},
 			wantB: true,
 		},
 		{
 			name: "boundery 2",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
-			args:  args{point{2, 2}},
+			args:  args{Point{x: 2, y: 2}},
 			wantB: true,
 		},
 		{
 			name: "out of boundery",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
-			args:  args{point{6, 6}},
+			args:  args{Point{x: 6, y: 6}},
 			wantB: false,
 		},
 		{
 			name: "out of boundery 2",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
-			args:  args{point{-1, -1}},
+			args:  args{Point{x: -1, y: -1}},
 			wantB: false,
 		},
 	}
@@ -245,25 +245,25 @@ func Test_trapezoid_pointInTrapezoid(t *testing.T) {
 
 func Test_trapezoid_addSegmentInside(t *testing.T) {
 	type fields struct {
-		leftp       *point
-		rightp      *point
-		top         *segment
-		bottom      *segment
+		leftp       *Point
+		rightp      *Point
+		top         *Segment
+		bottom      *Segment
 		upperLeftN  *trapezoid
 		lowerLeftN  *trapezoid
 		upperRightN *trapezoid
 		lowerRightN *trapezoid
 	}
 	type args struct {
-		s segment
+		s Segment
 	}
-	lp := point{0, 0}
-	rp := point{5, 0}
-	inputStart := point{2, 2}
-	inputEnd := point{4, 3}
-	bounderyTopSegment := newSegment(point{x: lp.x, y: 5}, point{5, 5})
-	bounderyBotSegment := newSegment(lp, rp)
-	input := newSegment(inputStart, inputEnd)
+	lp := Point{x: 0, y: 0}
+	rp := Point{x: 5, y: 0}
+	inputStart := Point{x: 2, y: 2}
+	inputEnd := Point{x: 4, y: 3}
+	bounderyTopSegment := NewSegment(Point{x: lp.x, y: 5}, Point{x: 5, y: 5})
+	bounderyBotSegment := NewSegment(lp, rp)
+	input := NewSegment(inputStart, inputEnd)
 
 	lt := trapezoid{
 		leftp:  &lp,
@@ -305,18 +305,24 @@ func Test_trapezoid_addSegmentInside(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		wantTs []trapezoid
+		wantLt trapezoid
+		wantUt trapezoid
+		wantRt trapezoid
+		wantBt trapezoid
 	}{
 		{
 			name: "first add",
 			fields: fields{
-				leftp:  &point{0, 0},
-				rightp: &point{5, 0},
+				leftp:  &Point{x: 0, y: 0},
+				rightp: &Point{x: 5, y: 0},
 				top:    &bounderyTopSegment,
 				bottom: &bounderyBotSegment,
 			},
 			args:   args{input},
-			wantTs: []trapezoid{lt, ut, rt, bt},
+			wantLt: lt,
+			wantUt: ut,
+			wantRt: rt,
+			wantBt: bt,
 		},
 	}
 	for _, tt := range tests {
@@ -331,8 +337,18 @@ func Test_trapezoid_addSegmentInside(t *testing.T) {
 				upperRightN: tt.fields.upperRightN,
 				lowerRightN: tt.fields.lowerRightN,
 			}
-			if gotTs := tr.addSegmentInside(tt.args.s); !reflect.DeepEqual(gotTs, tt.wantTs) {
-				t.Errorf("trapezoid.addSegmentInside() = %v, want %v", gotTs, tt.wantTs)
+			gotLt, gotUt, gotRt, gotBt := tr.addSegmentInside(&tt.args.s)
+			if !reflect.DeepEqual(gotLt, tt.wantLt) {
+				t.Errorf("trapezoid.addSegmentInside() gotLt = %v, want %v", gotLt, tt.wantLt)
+			}
+			if !reflect.DeepEqual(gotUt, tt.wantUt) {
+				t.Errorf("trapezoid.addSegmentInside() gotUt = %v, want %v", gotUt, tt.wantUt)
+			}
+			if !reflect.DeepEqual(gotRt, tt.wantRt) {
+				t.Errorf("trapezoid.addSegmentInside() gotRt = %v, want %v", gotRt, tt.wantRt)
+			}
+			if !reflect.DeepEqual(gotBt, tt.wantBt) {
+				t.Errorf("trapezoid.addSegmentInside() gotBt = %v, want %v", gotBt, tt.wantBt)
 			}
 		})
 	}

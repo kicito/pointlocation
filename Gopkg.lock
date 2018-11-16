@@ -2,14 +2,16 @@
 
 
 [[projects]]
-  name = "github.com/shopspring/decimal"
+  digest = "1:36cfc0b6facbc68c92a4d55f32eff22b872a899ab75c384ac24a08dd33bc1380"
+  name = "github.com/paulmach/go.geojson"
   packages = ["."]
-  revision = "cd690d0c9e2447b1ef2a129a6b7b49077da89b8e"
-  version = "1.1.0"
+  pruneopts = "UT"
+  revision = "a5c451da2d9c67c590ae6be92565b67698286a1a"
+  version = "v1.4"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9cdc9c5972b74d9d698383337ce37d6a16bbf2bab5cd8c40aeda95b0de2069fd"
+  input-imports = ["github.com/paulmach/go.geojson"]
   solver-name = "gps-cdcl"
   solver-version = 1

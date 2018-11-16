@@ -11,12 +11,17 @@ func almostEqual(a, b float64) bool {
 	return math.Abs(a-b) <= float64EqualityThreshold
 }
 
-type point struct {
+type Point struct {
 	x float64
 	y float64
+	s *Segment
 }
 
-func (p point) String() string {
+func NewPoint(x, y float64) Point {
+	return Point{x: x, y: y}
+}
+
+func (p Point) String() string {
 	return fmt.Sprintf("(%v, %v)", p.x, p.y)
 }
 
@@ -28,9 +33,16 @@ const (
 	colinear
 )
 
-func (p point) positionBySegment(s segment) (pos int, err error) {
+func (p Point) positionBySegment(s Segment) (pos int, err error) {
 	var segmentY float64
 
+	if p.x == s.startPoint.x && p.y == s.startPoint.y {
+		if p.s != nil && s.slope != nil && *p.s.slope > *s.slope {
+			return upper, nil
+		} else {
+			return lower, nil
+		}
+	}
 	if segmentY, err = s.y(p.x); err != nil {
 		return
 	}
@@ -42,8 +54,15 @@ func (p point) positionBySegment(s segment) (pos int, err error) {
 	return
 }
 
-//  the function checks if point p lies on line segment 's'
-func (p point) isPointOnSegment(s segment) bool {
+func (p Point) sameCoordinate(pp Point) bool {
+	if p.x == pp.x && p.y == pp.y {
+		return true
+	}
+	return false
+}
+
+//  the function checks if Point p lies on line Segment 's'
+func (p Point) isPointOnSegment(s Segment) bool {
 
 	if p.x <= s.maxX() && p.x >= s.minX() &&
 		p.y <= s.maxY() && p.y >= s.minY() {
@@ -53,16 +72,16 @@ func (p point) isPointOnSegment(s segment) bool {
 }
 
 /**
-Slope of line segment (p1, p2): σ = (y2 - y1)/(x2 - x1)
-Slope of line segment (p2, p3): τ = (y3 - y2)/(x3 - x2)
+Slope of line Segment (p1, p2): σ = (y2 - y1)/(x2 - x1)
+Slope of line Segment (p2, p3): τ = (y3 - y2)/(x3 - x2)
 
 If  σ < τ, the orientation is counterclockwise (left turn)
 If  σ = τ, the orientation is collinear
 If  σ > τ, the orientation is clockwise (right turn)
 */
-func (p point) orientationFromSegment(s segment) (pos int) {
-	// fmt.Println("comparing point", p, "with segment", s)
-	slopeSegmentEndPointToPoint := newSegment(s.endPoint, p).slope
+func (p Point) orientationFromSegment(s Segment) (pos int) {
+	// fmt.Println("comparing Point", p, "with Segment", s)
+	slopeSegmentEndPointToPoint := NewSegment(s.endPoint, p).slope
 	if s.slope == nil {
 		if p.x == s.startPoint.x {
 			return colinear
@@ -108,8 +127,8 @@ func (p point) orientationFromSegment(s segment) (pos int) {
 		return counterclockwise
 	}
 
-	// fmt.Printf("segment %+v endsegment to point %+v\n", s, newSegment(s.endPoint, p))
-	// fmt.Printf("slope segment %+v, slope endsegment to point %+v\n", *s.slope, *slopeSegmentEndPointToPoint)
+	// fmt.Printf("Segment %+v endsegment to Point %+v\n", s, NewSegment(s.endPoint, p))
+	// fmt.Printf("slope Segment %+v, slope endsegment to Point %+v\n", *s.slope, *slopeSegmentEndPointToPoint)
 	if *s.slope == *slopeSegmentEndPointToPoint {
 		return colinear
 	} else if *s.slope > *slopeSegmentEndPointToPoint {

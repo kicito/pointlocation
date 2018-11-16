@@ -8,7 +8,7 @@ func Test_point_positionBySegment(t *testing.T) {
 		y float64
 	}
 	type args struct {
-		s segment
+		s Segment
 	}
 	tests := []struct {
 		name    string
@@ -24,9 +24,9 @@ func Test_point_positionBySegment(t *testing.T) {
 				y: -2,
 			},
 			args: args{
-				newSegment(
-					point{-10, -4},
-					point{-6, -2},
+				NewSegment(
+					Point{x: -10, y: -4},
+					Point{x: -6, y: -2},
 				),
 			},
 			wantPos: upper,
@@ -39,9 +39,9 @@ func Test_point_positionBySegment(t *testing.T) {
 				y: -10,
 			},
 			args: args{
-				newSegment(
-					point{-10, -4},
-					point{-6, -2},
+				NewSegment(
+					Point{x: -10, y: -4},
+					Point{x: -6, y: -2},
 				),
 			},
 			wantPos: lower,
@@ -53,23 +53,20 @@ func Test_point_positionBySegment(t *testing.T) {
 				x: -11.68,
 				y: -3.99,
 			},
-			args:    args{newSegment(point{-10.34, 1.83}, point{-6.58, 2.01})},
+			args:    args{NewSegment(Point{x: -10.34, y: 1.83}, Point{x: -6.58, y: 2.01})},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := point{
-				tt.fields.x,
-				tt.fields.y,
-			}
+			p := Point{x: tt.fields.x, y: tt.fields.y}
 			gotPos, err := p.positionBySegment(tt.args.s)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("point.positionBySegment() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Point.x:positionBySegment() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotPos != tt.wantPos {
-				t.Errorf("point.positionBySegment() = %v, want %v", gotPos, tt.wantPos)
+				t.Errorf("Point.x:positionBySegment() = %v, want %v", gotPos, tt.wantPos)
 			}
 		})
 	}
@@ -83,7 +80,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		args    segment
+		args    Segment
 		wantPos int
 	}{
 		{
@@ -92,7 +89,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 2,
 				y: 2,
 			},
-			args:    newSegment(point{0, 0}, point{0, 5}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 0, y: 5}),
 			wantPos: clockwise,
 		},
 		{
@@ -101,7 +98,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: -2,
 				y: -2,
 			},
-			args:    newSegment(point{0, 0}, point{0, 5}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 0, y: 5}),
 			wantPos: counterclockwise,
 		},
 		{
@@ -110,7 +107,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 3,
 				y: 3,
 			},
-			args:    newSegment(point{0, 0}, point{5, 0}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0}),
 			wantPos: counterclockwise,
 		},
 		{
@@ -119,61 +116,61 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 2,
 				y: -2,
 			},
-			args:    newSegment(point{0, 0}, point{5, 0}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 5, y: 0}),
 			wantPos: clockwise,
 		},
 		{
-			name: "third point vertical clockwise",
+			name: "third Point x:vertical clockwise",
 			fields: fields{
 				x: -1,
 				y: 2,
 			},
-			args:    newSegment(point{0, 0}, point{-1, -1}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: -1, y: -1}),
 			wantPos: clockwise,
 		},
 		{
-			name: "third point vertical counterclockwise",
+			name: "third Point x:vertical counterclockwise",
 			fields: fields{
 				x: -1,
 				y: -2,
 			},
-			args:    newSegment(point{0, 0}, point{-1, -1}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: -1, y: -1}),
 			wantPos: counterclockwise,
 		},
 		{
-			name: "third point horizontal clockwise",
+			name: "third Point x:horizontal clockwise",
 			fields: fields{
 				x: 2,
 				y: 1,
 			},
-			args:    newSegment(point{0, 0}, point{1, 1}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 1, y: 1}),
 			wantPos: clockwise,
 		},
 		{
-			name: "third point horizontal counterclockwise",
+			name: "third Point x:horizontal counterclockwise",
 			fields: fields{
 				x: 0,
 				y: 1,
 			},
-			args:    newSegment(point{0, 0}, point{1, 1}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 1, y: 1}),
 			wantPos: counterclockwise,
 		},
 		{
-			name: "third point horizontal and segment slope < 0 clockwise",
+			name: "third Point x:horizontal and Segment slope < 0 clockwise",
 			fields: fields{
 				x: 2,
 				y: -1,
 			},
-			args:    newSegment(point{0, 0}, point{1, -1}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 1, y: -1}),
 			wantPos: counterclockwise,
 		},
 		{
-			name: "third point horizontal and segment slope < 0 counterclockwise",
+			name: "third Point x:horizontal and Segment slope < 0 counterclockwise",
 			fields: fields{
 				x: 0,
 				y: -1,
 			},
-			args:    newSegment(point{0, 0}, point{1, -1}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 1, y: -1}),
 			wantPos: clockwise,
 		},
 		{
@@ -182,7 +179,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 0,
 				y: 0,
 			},
-			args:    newSegment(point{10, 0}, point{0, 10}),
+			args:    NewSegment(Point{x: 10, y: 0}, Point{x: 0, y: 10}),
 			wantPos: clockwise,
 		},
 		{
@@ -191,7 +188,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 10,
 				y: 10,
 			},
-			args:    newSegment(point{10, 0}, point{0, 10}),
+			args:    NewSegment(Point{x: 10, y: 0}, Point{x: 0, y: 10}),
 			wantPos: counterclockwise,
 		},
 		{
@@ -200,7 +197,7 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 10,
 				y: 0,
 			},
-			args:    newSegment(point{0, 0}, point{10, 10}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 10, y: 10}),
 			wantPos: clockwise,
 		},
 		{
@@ -209,18 +206,18 @@ func Test_point_orientationFromSegment(t *testing.T) {
 				x: 0,
 				y: 10,
 			},
-			args:    newSegment(point{0, 0}, point{10, 10}),
+			args:    NewSegment(Point{x: 0, y: 0}, Point{x: 10, y: 10}),
 			wantPos: counterclockwise,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := point{
+			p := Point{
 				x: tt.fields.x,
 				y: tt.fields.y,
 			}
 			if gotPos := p.orientationFromSegment(tt.args); gotPos != tt.wantPos {
-				t.Errorf("point.orientationFromSegment() = %v, want %v", gotPos, tt.wantPos)
+				t.Errorf("Point.x:orientationFromSegment() = %v, want %v", gotPos, tt.wantPos)
 			}
 		})
 	}

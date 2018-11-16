@@ -4,27 +4,27 @@ import (
 	"fmt"
 )
 
-type segment struct {
-	startPoint point
-	endPoint   point
+type Segment struct {
+	startPoint Point
+	endPoint   Point
 	slope      *float64
 	yIntercept *float64
 }
 
-func (s segment) String() string {
-	var slope string
-	var yint string
-	if s.slope == nil {
-		slope = "-"
-	} else {
-		slope = fmt.Sprintf("%.2f", *s.slope)
-	}
-	if s.yIntercept == nil {
-		yint = "-"
-	} else {
-		yint = fmt.Sprintf("%.2f", *s.yIntercept)
-	}
-	return fmt.Sprintf("%+v -> %+v, m= %v, yint= %v", s.startPoint, s.endPoint, slope, yint)
+func (s Segment) String() string {
+	// var slope string
+	// var yint string
+	// if s.slope == nil {
+	// 	slope = "-"
+	// } else {
+	// 	slope = fmt.Sprintf("%.2f", *s.slope)
+	// }
+	// if s.yIntercept == nil {
+	// 	yint = "-"
+	// } else {
+	// 	yint = fmt.Sprintf("%.2f", *s.yIntercept)
+	// }
+	return fmt.Sprintf("%+v -> %+v", s.startPoint, s.endPoint)
 }
 
 type outOfBoundError struct {
@@ -36,11 +36,11 @@ func (e *outOfBoundError) Error() string {
 	return fmt.Sprintf("Out of bound %v: %s", e.input, e.err)
 }
 
-func (s segment) y(x float64) (y float64, err error) {
+func (s Segment) y(x float64) (y float64, err error) {
 	if !s.inBoundX(x) {
 		return y, &outOfBoundError{
 			input: x,
-			err:   fmt.Sprintf("x value, segment bound y = %v - %v", s.minX(), s.maxX()),
+			err:   fmt.Sprintf("x value, Segment bound y = %v - %v", s.minX(), s.maxX()),
 		}
 	}
 
@@ -65,11 +65,11 @@ func (s segment) y(x float64) (y float64, err error) {
 	return
 }
 
-func (s segment) x(y float64) (x float64, err error) {
+func (s Segment) x(y float64) (x float64, err error) {
 	if !s.inBoundY(y) {
 		err = &outOfBoundError{
 			input: y,
-			err:   fmt.Sprintf("y value, segment bound y = %v - %v", s.minY(), s.maxY()),
+			err:   fmt.Sprintf("y value, Segment bound y = %v - %v", s.minY(), s.maxY()),
 		}
 		return
 	}
@@ -94,7 +94,7 @@ func (s segment) x(y float64) (x float64, err error) {
 	return
 }
 
-func (s segment) inBound(p point) bool {
+func (s Segment) inBound(p Point) bool {
 	if !s.inBoundY(p.y) {
 		return false
 	}
@@ -104,43 +104,43 @@ func (s segment) inBound(p point) bool {
 	return true
 }
 
-func (s segment) inBoundX(x float64) bool {
+func (s Segment) inBoundX(x float64) bool {
 	return x >= s.minX() && x <= s.maxX()
 }
 
-func (s segment) inBoundY(y float64) bool {
+func (s Segment) inBoundY(y float64) bool {
 	return y >= s.minY() && y <= s.maxY()
 }
 
-func (s segment) minX() float64 {
+func (s Segment) minX() float64 {
 	if s.startPoint.x < s.endPoint.x {
 		return s.startPoint.x
 	}
 	return s.endPoint.x
 }
 
-func (s segment) minY() float64 {
+func (s Segment) minY() float64 {
 	if s.startPoint.y < s.endPoint.y {
 		return s.startPoint.y
 	}
 	return s.endPoint.y
 }
 
-func (s segment) maxX() float64 {
+func (s Segment) maxX() float64 {
 	if s.startPoint.x < s.endPoint.x {
 		return s.endPoint.x
 	}
 	return s.startPoint.x
 }
 
-func (s segment) maxY() float64 {
+func (s Segment) maxY() float64 {
 	if s.startPoint.y < s.endPoint.y {
 		return s.endPoint.y
 	}
 	return s.startPoint.y
 }
 
-func (s segment) isSegmentIntersect(so segment) bool {
+func (s Segment) isSegmentIntersect(so Segment) bool {
 	// https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 
 	o1 := so.startPoint.orientationFromSegment(s)
@@ -168,7 +168,7 @@ func (s segment) isSegmentIntersect(so segment) bool {
 	return false
 }
 
-func newSegment(start point, end point) segment {
+func NewSegment(start Point, end Point) Segment {
 	var slope *float64
 	var yIntercept *float64
 	var swapFlag bool
@@ -207,11 +207,13 @@ func newSegment(start point, end point) segment {
 		end = tmp
 	}
 
-	s := segment{
+	s := Segment{
 		startPoint: start,
 		endPoint:   end,
 		slope:      slope,
 		yIntercept: yIntercept,
 	}
+	s.startPoint.s = &s
+	s.endPoint.s = &s
 	return s
 }
