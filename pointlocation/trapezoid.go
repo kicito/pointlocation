@@ -2,7 +2,11 @@ package pointlocation
 
 import (
 	"fmt"
-	"log"
+	"image/color"
+
+	"github.com/pkg/errors"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 type trapezoid struct {
@@ -122,91 +126,119 @@ func (t trapezoid) String() string {
 	)
 }
 
-func (t trapezoid) topSegment() Segment {
+func (t trapezoid) equalTrapezoid(tr trapezoid, checkNeighbor bool) bool {
+	if t.leftp.sameCoordinate(tr.leftp) &&
+		t.rightp.sameCoordinate(tr.rightp) &&
+		t.top.startPoint.sameCoordinate(tr.top.startPoint) &&
+		t.top.endPoint.sameCoordinate(tr.top.endPoint) &&
+		t.bottom.startPoint.sameCoordinate(tr.bottom.startPoint) &&
+		t.bottom.endPoint.sameCoordinate(tr.bottom.endPoint) {
+
+		if checkNeighbor {
+			return t.upperLeftN.equalTrapezoid(*tr.upperLeftN, false) &&
+				t.lowerRightN.equalTrapezoid(*tr.lowerRightN, false) &&
+				t.upperRightN.equalTrapezoid(*tr.upperRightN, false) &&
+				t.lowerRightN.equalTrapezoid(*tr.lowerRightN, false)
+		}
+		return true
+	}
+	return false
+}
+
+func (t trapezoid) topSegment() (Segment, error) {
 	startY, err := t.top.y(t.leftp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "topsegment trapezoid %v", t)
 	}
 	startPoint := Point{x: t.leftp.x, y: startY}
 
 	endY, err := t.top.y(t.rightp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "topsegment trapezoid %v", t)
 	}
 	endPoint := Point{x: t.rightp.x, y: endY}
-	return NewSegment(startPoint, endPoint)
+	return NewSegment(startPoint, endPoint), nil
 }
 
-func (t trapezoid) bottomSegment() Segment {
+func (t trapezoid) bottomSegment() (Segment, error) {
 	startY, err := t.bottom.y(t.leftp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "bottomsegment trapezoid %v", t)
 	}
 	startPoint := Point{x: t.leftp.x, y: startY}
 
 	endY, err := t.bottom.y(t.rightp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "bottomsegment trapezoid %v", t)
 	}
 	endPoint := Point{x: t.rightp.x, y: endY}
-	return NewSegment(startPoint, endPoint)
+	return NewSegment(startPoint, endPoint), nil
 
 }
 
-func (t trapezoid) leftSegment() Segment {
+func (t trapezoid) leftSegment() (Segment, error) {
 	startY, err := t.top.y(t.leftp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "leftSegment trapezoid %v", t)
 	}
 	startPoint := Point{x: t.leftp.x, y: startY}
 
 	endY, err := t.bottom.y(t.leftp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "leftSegment trapezoid %v", t)
 	}
 	endPoint := Point{x: t.leftp.x, y: endY}
-	return NewSegment(startPoint, endPoint)
+	return NewSegment(startPoint, endPoint), nil
 }
 
-func (t trapezoid) rightSegment() Segment {
+func (t trapezoid) rightSegment() (Segment, error) {
 	startY, err := t.top.y(t.rightp.x)
 	if err != nil {
-		log.Fatal(err)
+		return Segment{}, errors.Wrapf(err, "rightSegment trapezoid %v", t)
 	}
 	startPoint := Point{x: t.rightp.x, y: startY}
 
 	endY, err := t.bottom.y(t.rightp.x)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("yellow", t)
+		return Segment{}, errors.Wrapf(err, "rightSegment trapezoid %v", t)
 	}
 	endPoint := Point{x: t.rightp.x, y: endY}
-	return NewSegment(startPoint, endPoint)
+	return NewSegment(startPoint, endPoint), nil
 }
 
 // comparing if the Point is in side trapezoid by check orientation of Point to each Segment is inside trapeziod
-func (t trapezoid) pointInTrapezoid(p Point) (b bool) {
+func (t trapezoid) pointInTrapezoid(p Point) (b bool, err error) {
 	var tmpSegment Segment
 	var tmpOrt int
-	tmpSegment = t.leftSegment()
+	if tmpSegment, err = t.leftSegment(); err != nil {
+		return
+	}
 	tmpOrt = p.orientationFromSegment(tmpSegment)
 	if tmpOrt == counterclockwise {
 		b = false
 		return
 	}
-	tmpSegment = t.topSegment()
+	if tmpSegment, err = t.topSegment(); err != nil {
+		return
+	}
 	tmpOrt = p.orientationFromSegment(tmpSegment)
 	if tmpOrt == counterclockwise {
 		b = false
 		return
 	}
-	tmpSegment = t.rightSegment()
+	if tmpSegment, err = t.rightSegment(); err != nil {
+		return
+	}
 	tmpOrt = p.orientationFromSegment(tmpSegment)
 	if tmpOrt == clockwise {
 		b = false
 		return
 	}
 
-	tmpSegment = t.bottomSegment()
+	if tmpSegment, err = t.bottomSegment(); err != nil {
+		return
+	}
 	tmpOrt = p.orientationFromSegment(tmpSegment)
 	if tmpOrt == clockwise {
 		b = false
@@ -217,39 +249,11 @@ func (t trapezoid) pointInTrapezoid(p Point) (b bool) {
 	return
 }
 
-func (t trapezoid) segmentInTrapezoid(s Segment) (b bool) {
-	b = t.pointInTrapezoid(s.startPoint) && t.pointInTrapezoid(s.endPoint)
-	return
-}
-
-func (t trapezoid) lineIntersectOrInside(s Segment) (b bool) {
-
-	// if Segment is in trapezoid
-	if t.segmentInTrapezoid(s) {
-		b = true
+func (t trapezoid) segmentInTrapezoid(s Segment) (b bool, err error) {
+	if b, err = t.pointInTrapezoid(s.startPoint); err != nil {
 		return
 	}
-
-	var tmpSegment Segment
-	// if Segment is intersect trapezoid
-	tmpSegment = t.leftSegment()
-	if tmpSegment.isSegmentIntersect(s) {
-		b = true
-		return
-	}
-	tmpSegment = t.topSegment()
-	if tmpSegment.isSegmentIntersect(s) {
-		b = true
-		return
-	}
-	tmpSegment = t.rightSegment()
-	if tmpSegment.isSegmentIntersect(s) {
-		b = true
-		return
-	}
-	tmpSegment = t.bottomSegment()
-	if tmpSegment.isSegmentIntersect(s) {
-		b = true
+	if b, err = t.pointInTrapezoid(s.endPoint); err != nil {
 		return
 	}
 	return
@@ -259,6 +263,12 @@ func (t *trapezoid) assignLeftNeighborToTrapezoid(tr *trapezoid) (err error) {
 	// if t.leftp != tr.rightp {
 	// 	return fmt.Errorf("trapezoidal %v cannot be left Neighbor to %v", tr, t)
 	// }
+	if tr == nil || *tr == (trapezoid{}) {
+		t.upperLeftN = nil
+		t.lowerLeftN = nil
+		return
+	}
+	// if t.leftp.x == tr.rightp.x {
 	if t.top == tr.top {
 		t.upperLeftN = tr
 		tr.upperRightN = t
@@ -268,23 +278,33 @@ func (t *trapezoid) assignLeftNeighborToTrapezoid(tr *trapezoid) (err error) {
 		t.lowerLeftN = tr
 		tr.lowerRightN = t
 	}
-
 	return
+	// }
+
+	return nil
+	// return fmt.Errorf("trapezoid %v can't be neighbor with %v, trapezoid is not connect", t, tr)
 }
 
 func (t *trapezoid) assignRightNeighborToTrapezoid(tr *trapezoid) (err error) {
-	// if t.rightp != tr.leftp {
-	// 	return fmt.Errorf("trapezoidal %v cannot be right Neighbor to %v", tr, t)
-	// }
+	if tr == nil || *tr == (trapezoid{}) {
+		t.upperRightN = nil
+		t.lowerRightN = nil
+		return
+	}
+	// if t.rightp.x == tr.leftp.x {
 	if t.top == tr.top {
-		tr.upperLeftN = t
 		t.upperRightN = tr
+		tr.upperLeftN = t
 	}
 	if t.bottom == tr.bottom {
-		tr.lowerLeftN = t
 		t.lowerRightN = tr
+		tr.lowerLeftN = t
 	}
 	return
+	// }
+	return nil
+
+	// return fmt.Errorf("trapezoid %v can't be neighbor with %v, trapezoid is not connect", t, tr)
 }
 
 func (t *trapezoid) replaceUpperLeftNeighborWith(tr *trapezoid) (err error) {
@@ -366,47 +386,28 @@ func (t *trapezoid) replaceLowerNeighborsWith(tr *trapezoid) (err error) {
 	return
 }
 
-func (t *trapezoid) addSegmentLeftTrapeziod(s Segment) (lt *trapezoid, dagNode node, err error) {
-	lt = &trapezoid{
+func (t trapezoid) addSegmentLeftTrapeziod(s Segment) (lt trapezoid, err error) {
+	lt = trapezoid{
 		leftp:  t.leftp,
 		rightp: s.startPoint,
 		top:    t.top,
 		bottom: t.bottom,
 	}
-	if err = t.replaceLeftNeighborsWith(lt); err != nil {
-		return
-	}
-	x1 := xNode{xCoordinate: s.startPoint.x}
-	ltNode := trapezoidNode{tr: lt, parents: make([]node, 0)}
-	lt.dagRef = &ltNode
-	x1.assignLeft(&ltNode)
-	dagNode = &x1
 	return
 }
 
-func (t *trapezoid) addSegmentRightTrapezoid(s Segment) (rt *trapezoid, dagNode node, err error) {
-	rt = &trapezoid{
+func (t trapezoid) addSegmentRightTrapezoid(s Segment) (rt trapezoid, err error) {
+	rt = trapezoid{
 		leftp:  s.endPoint,
 		rightp: t.rightp,
 		top:    t.top,
 		bottom: t.bottom,
 	}
-	if err = t.replaceRightNeighborsWith(rt); err != nil {
-		return
-	}
-	rtNode := trapezoidNode{tr: rt, parents: make([]node, 0)}
-	rt.dagRef = &rtNode
-	x1 := xNode{xCoordinate: s.endPoint.x}
-	x1.assignRight(&rtNode)
-	dagNode = node(&x1)
 	return
 }
 
-func (t *trapezoid) addSegmentInside(oldUT, oldBT *trapezoid, s Segment) (ut, bt *trapezoid, dagNode node, trs []trapezoid, err error) {
-	trs = make([]trapezoid, 0)
-	var lt, rt *trapezoid
-	var xNodeStart, xNodeEnd, yNode node
-	if ut, bt, yNode, err = t.splitY(oldUT, oldBT, s); err != nil {
+func (t trapezoid) addSegmentInside(oldUT, oldBT *trapezoid, s Segment) (lt, rt trapezoid, ut, bt *trapezoid, err error) {
+	if ut, bt, err = t.splitY(oldUT, oldBT, s); err != nil {
 		return
 	}
 	isFirstTr := t.leftp.x <= s.startPoint.x && t.rightp.x >= s.startPoint.x
@@ -414,108 +415,49 @@ func (t *trapezoid) addSegmentInside(oldUT, oldBT *trapezoid, s Segment) (ut, bt
 
 	// if left p is not on same coordinate as segment's endpoint, we do create lt
 	if isFirstTr {
-		if !t.leftp.sameCoordinate(s.startPoint) {
-			lt, xNodeStart, err = t.addSegmentLeftTrapeziod(s)
+		if !t.leftp.sameCoordinate(s.startPoint) && !t.rightp.sameCoordinate(s.startPoint) {
+			lt, err = t.addSegmentLeftTrapeziod(s)
 			if err != nil {
 				return
-			}
-			if err = t.replaceLeftNeighborsWith(lt); err != nil {
-				return
-			}
-			if err = lt.assignRightNeighborToTrapezoid(ut); err != nil {
-				return
-			}
-			if err = lt.assignRightNeighborToTrapezoid(bt); err != nil {
-				return
-			}
-		} else {
-			// leftp and segment's start endpoint is same we check how it share the point
-			if t.leftp.sameCoordinate(t.top.startPoint) { // connect by segment is lower
-				if err = t.replaceLeftNeighborsWith(bt); err != nil {
-					return
-				}
-			} else if t.leftp.sameCoordinate(t.bottom.startPoint) { // connect by segment is higher
-				if err = t.replaceLeftNeighborsWith(ut); err != nil {
-					return
-				}
-			} else { // connect by continuation
-				if err = t.replaceLeftNeighborsWith(ut); err != nil {
-					return
-				}
-				if err = t.replaceLeftNeighborsWith(bt); err != nil {
-					return
-				}
 			}
 		}
 
 	}
 
 	if isLastTr {
-		// if right p is not on same coordinate as segment's endpoint, we do create rt
-		// else, we do nothing because splitY already done repalcing neighbor
-		if !t.rightp.sameCoordinate(s.endPoint) {
-			rt, xNodeEnd, err = t.addSegmentRightTrapezoid(s)
+		if !t.leftp.sameCoordinate(s.endPoint) && !t.rightp.sameCoordinate(s.endPoint) {
+			// if right p is not on same coordinate as segment's endpoint, we do create rt
+			// else, we do nothing because splitY already done repalceing neighbor
+			rt, err = t.addSegmentRightTrapezoid(s)
 			if err != nil {
-				return
-			}
-			if err = ut.replaceRightNeighborsWith(rt); err != nil {
-				return
-			}
-			if err = bt.replaceRightNeighborsWith(rt); err != nil {
-				return
-			}
-			if err = rt.assignLeftNeighborToTrapezoid(ut); err != nil {
-				return
-			}
-			if err = rt.assignLeftNeighborToTrapezoid(bt); err != nil {
 				return
 			}
 		}
 	}
 
-	// creating sub tree
-	if xNodeStart != nil && xNodeEnd != nil {
-		xNodeStart.assignRight(xNodeEnd)
-		xNodeEnd.assignLeft(yNode)
-		dagNode = node(xNodeStart)
-	} else if xNodeStart != nil {
-		xNodeStart.assignRight(yNode)
-		dagNode = node(xNodeStart)
-	} else if xNodeEnd != nil {
-		xNodeEnd.assignLeft(yNode)
-		dagNode = node(xNodeEnd)
-	} else {
-		dagNode = node(yNode)
-	}
-
-	// add result to trapeziod list
-	if lt != nil {
-		trs = append(trs, *lt)
-	}
-	if rt != nil {
-		trs = append(trs, *rt)
-	}
-	trs = append(trs, *ut, *bt)
 	return
 }
 
-func (t trapezoid) addSegment(oldUT, oldBT *trapezoid, s Segment) (newUT, newBT *trapezoid, dagNode node, trs []trapezoid, err error) {
-	trs = make([]trapezoid, 0)
+func (t trapezoid) addSegment(oldUT, oldBT *trapezoid, s Segment) (newLT, newRT trapezoid, newUT, newBT *trapezoid, err error) {
 
 	isLastTr := t.leftp.x <= s.endPoint.x && t.rightp.x >= s.endPoint.x
 
 	if oldUT == nil && oldBT == nil || isLastTr { // first or last iteration
-		return t.addSegmentInside(oldUT, oldBT, s)
+		if newLT, newRT, newUT, newBT, err = t.addSegmentInside(oldUT, oldBT, s); err != nil {
+			err = errors.Wrap(err, "unable to add segment")
+			return
+		}
+		return
 	}
 
 	// middle segment
-	newUT, newBT, dagNode, err = t.splitY(oldUT, oldBT, s)
-	trs = append(trs, *newUT, *newBT)
+	newUT, newBT, err = t.splitY(oldUT, oldBT, s)
 	return
 }
 
-func (t trapezoid) splitY(oldUT, oldBT *trapezoid, s Segment) (ut, bt *trapezoid, y node, err error) {
-	if t.segmentInTrapezoid(s) {
+func (t trapezoid) splitY(oldUT, oldBT *trapezoid, s Segment) (ut, bt *trapezoid, err error) {
+	if s.startPoint.x >= t.leftp.x &&
+		s.endPoint.x <= t.rightp.x {
 		ut = &trapezoid{
 			leftp:  s.startPoint,
 			rightp: s.endPoint,
@@ -529,7 +471,7 @@ func (t trapezoid) splitY(oldUT, oldBT *trapezoid, s Segment) (ut, bt *trapezoid
 			bottom: t.bottom,
 		}
 	} else {
-		if oldUT != nil && oldUT.top == t.top {
+		if oldUT != nil && oldUT.top == t.top && oldUT.bottom == t.bottom {
 			ut = oldUT
 		} else {
 			ut = &trapezoid{
@@ -538,11 +480,8 @@ func (t trapezoid) splitY(oldUT, oldBT *trapezoid, s Segment) (ut, bt *trapezoid
 				top:    t.top,
 				bottom: s,
 			}
-			if oldUT != nil {
-				oldUT.assignRightNeighborToTrapezoid(ut)
-			}
 		}
-		if oldBT != nil && oldBT.bottom == t.bottom {
+		if oldBT != nil && oldBT.bottom == t.bottom && oldBT.top == t.top {
 			bt = oldBT
 		} else {
 			bt = &trapezoid{
@@ -551,59 +490,37 @@ func (t trapezoid) splitY(oldUT, oldBT *trapezoid, s Segment) (ut, bt *trapezoid
 				top:    s,
 				bottom: t.bottom,
 			}
-			if oldBT != nil {
-				oldBT.assignRightNeighborToTrapezoid(ut)
-			}
 		}
 		if s.startPoint.x > t.leftp.x {
 			ut.leftp = s.startPoint
 			bt.leftp = s.startPoint
-		} else {
-			ut.leftp = t.leftp
-			bt.leftp = t.leftp
 		}
 		if s.endPoint.x < t.rightp.x {
 			ut.rightp = s.endPoint
 			bt.rightp = s.endPoint
-		} else {
-			ut.rightp = t.rightp
-			bt.rightp = t.rightp
 		}
 	}
 
-	if oldUT != nil {
-		if err = oldUT.replaceLeftNeighborsWith(ut); err != nil {
-			return
-		}
-	} else {
-		if err = t.replaceLeftNeighborsWith(ut); err != nil {
-			return
-		}
-	}
-	if oldBT != nil {
-		if err = oldBT.replaceLeftNeighborsWith(bt); err != nil {
-			return
-		}
-	} else {
-		if err = t.replaceLeftNeighborsWith(bt); err != nil {
-			return
-		}
-	}
-	if err = t.replaceRightNeighborsWith(ut); err != nil {
-		return
-	}
-	if err = t.replaceRightNeighborsWith(bt); err != nil {
-		return
-	}
-
-	utNode := trapezoidNode{tr: ut, parents: make([]node, 0)}
-	btNode := trapezoidNode{tr: bt, parents: make([]node, 0)}
-	ut.dagRef = &utNode
-	bt.dagRef = &btNode
-	y = &yNode{s: s}
-	y.assignLeft(&utNode)
-	y.assignRight(&btNode)
 	return
+}
+
+func (t *trapezoid) mergeWith(tr *trapezoid) error {
+	if tr.bottom != t.bottom && tr.top != t.top {
+		return fmt.Errorf("trapezoid cannot be merge")
+	}
+	var leftp Point
+	var rightp Point
+	if tr.leftp.x > t.leftp.x {
+		leftp = t.leftp
+	}
+
+	if tr.rightp.x > t.rightp.x {
+		rightp = tr.rightp
+	}
+	t.leftp = leftp
+	t.rightp = rightp
+	tr = t
+	return nil
 }
 
 func boundingBox(ss []Segment) (tr trapezoid) {
@@ -617,18 +534,18 @@ func boundingBox(ss []Segment) (tr trapezoid) {
 		if ss[index].maxY() > boundingBoxTop.y {
 			boundingBoxTop.y = ss[index].maxY()
 		}
-		if ss[index].minX() > boundingBoxBot.x {
+		if ss[index].minX() < boundingBoxBot.x {
 			boundingBoxBot.x = ss[index].minX()
 		}
-		if ss[index].minY() > boundingBoxBot.y {
+		if ss[index].minY() < boundingBoxBot.y {
 			boundingBoxBot.y = ss[index].minY()
 		}
 		index++
 	}
-	boundingBoxTop.x += 5
-	boundingBoxTop.y += 5
-	boundingBoxBot.x -= 5
-	boundingBoxBot.y -= 5
+	boundingBoxTop.x += 0.001
+	boundingBoxTop.y += 0.001
+	boundingBoxBot.x -= 0.001
+	boundingBoxBot.y -= 0.001
 
 	bounderyTopSegment := NewSegment(
 		Point{x: boundingBoxBot.x, y: boundingBoxTop.y},
@@ -646,5 +563,47 @@ func boundingBox(ss []Segment) (tr trapezoid) {
 		top:    bounderyTopSegment,
 		bottom: bounderyBotSegment,
 	}
+	return
+}
+
+func (tr trapezoid) plotData() (leftp, rightp *plotter.Scatter, top, bottom, boundl, boundr *plotter.Line, err error) {
+	if leftp, err = tr.leftp.scatter(); err != nil {
+		return
+	}
+	if rightp, err = tr.rightp.scatter(); err != nil {
+		return
+	}
+	top, _ = tr.top.line()
+	bottom, _ = tr.bottom.line()
+	// if top, err = tr.top.lineWithXBound(tr.leftp.x, tr.rightp.x); err != nil {
+	// 	return
+	// }
+	// if bottom, err = tr.bottom.lineWithXBound(tr.leftp.x, tr.rightp.x); err != nil {
+	// 	return
+	// }
+
+	lseg, err := tr.leftSegment()
+	if err != nil {
+		return
+	}
+	if boundl, err = lseg.line(); err != nil {
+		return
+	}
+	boundl.LineStyle.Width = vg.Points(1)
+	boundl.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
+	boundl.LineStyle.Color = color.RGBA{G: 255, A: 255}
+
+	rseg, err := tr.rightSegment()
+	if err != nil {
+		return
+	}
+	if boundr, err = rseg.line(); err != nil {
+		return
+	}
+
+	boundr.LineStyle.Width = vg.Points(1)
+	boundr.LineStyle.Dashes = []vg.Length{vg.Points(5), vg.Points(5)}
+	boundr.LineStyle.Color = color.RGBA{G: 255, A: 255}
+
 	return
 }

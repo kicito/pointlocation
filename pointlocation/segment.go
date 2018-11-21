@@ -2,6 +2,10 @@ package pointlocation
 
 import (
 	"fmt"
+	"image/color"
+
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
 )
 
 type Segment struct {
@@ -40,7 +44,7 @@ func (s Segment) y(x float64) (y float64, err error) {
 	if !s.inBoundX(x) {
 		return y, &outOfBoundError{
 			input: x,
-			err:   fmt.Sprintf("x value, Segment bound y = %v - %v", s.minX(), s.maxX()),
+			err:   fmt.Sprintf("x value, Segment bound x = %v - %v", s.minX(), s.maxX()),
 		}
 	}
 
@@ -171,14 +175,15 @@ func (s Segment) isSegmentIntersect(so Segment) bool {
 func NewSegment(start Point, end Point) Segment {
 	var slope *float64
 	var yIntercept *float64
-	var swapFlag bool
+	// var swapFlag bool
 
 	// sort by lexicography
 	if start.x > end.x {
-		swapFlag = true
-	} else if start.x == end.x && start.y < end.y {
-		swapFlag = true
+		start, end = end, start
 	}
+	// else if start.x == end.x && start.y < end.y {
+	// 	start, end = end, start
+	// }
 
 	if end.x == start.x {
 		// vertical case
@@ -189,22 +194,10 @@ func NewSegment(start Point, end Point) Segment {
 		slope = new(float64)
 		yIntercept = &start.y
 	} else {
-		// slope = end.y-start.y / end.x - start.x
 		tmpSlope := (end.y - start.y) / (end.x - start.x)
-		// if swapFlag {
-		// 	tmpSlope = -tmpSlope
-		// }
 		slope = &tmpSlope
-		// yintercept = start.y - (slope * start.x)
 		tmpYInt := start.y - tmpSlope*start.x
 		yIntercept = &tmpYInt
-
-	}
-
-	if swapFlag {
-		tmp := start
-		start = end
-		end = tmp
 	}
 
 	s := Segment{
@@ -216,4 +209,43 @@ func NewSegment(start Point, end Point) Segment {
 	s.startPoint.s = &s
 	s.endPoint.s = &s
 	return s
+}
+
+func (s Segment) line() (line *plotter.Line, err error) {
+	scatter := make(plotter.XYs, 2)
+	scatter[0].X = s.startPoint.x
+	scatter[0].Y = s.startPoint.y
+	scatter[1].X = s.endPoint.x
+	scatter[1].Y = s.endPoint.y
+	line, err = plotter.NewLine(scatter)
+	if err != nil {
+		return
+	}
+	line.LineStyle.Width = vg.Points(3)
+	line.LineStyle.Color = color.RGBA{B: 255, A: 255}
+	return
+}
+
+func (s Segment) lineWithXBound(start, end float64) (line *plotter.Line, err error) {
+	scatter := make(plotter.XYs, 2)
+	if start > s.startPoint.x {
+		scatter[0].X = start
+	} else {
+		scatter[0].X = s.startPoint.x
+	}
+	scatter[0].Y = s.startPoint.y
+
+	if end < s.endPoint.x {
+		scatter[1].X = end
+	} else {
+		scatter[1].X = s.endPoint.x
+	}
+	scatter[1].Y = s.endPoint.y
+	line, err = plotter.NewLine(scatter)
+	if err != nil {
+		return
+	}
+	line.LineStyle.Width = vg.Points(3)
+	line.LineStyle.Color = color.RGBA{B: 255, A: 255}
+	return
 }

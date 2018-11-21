@@ -2,7 +2,15 @@ package pointlocation
 
 import (
 	"fmt"
+	"image/color"
 	"math"
+
+	"github.com/pkg/errors"
+
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
+
+	"gonum.org/v1/plot/plotter"
 )
 
 const float64EqualityThreshold = 1e-13
@@ -44,6 +52,7 @@ func (p Point) positionBySegment(s Segment) (pos int, err error) {
 		}
 	}
 	if segmentY, err = s.y(p.x); err != nil {
+		err = errors.Wrapf(err, "point:%v, segment:%v", p, s)
 		return
 	}
 	if p.y > segmentY {
@@ -137,4 +146,18 @@ func (p Point) orientationFromSegment(s Segment) (pos int) {
 		return counterclockwise
 	}
 
+}
+
+func (p Point) scatter() (scatter *plotter.Scatter, err error) {
+	xys := make(plotter.XYs, 1)
+	xys[0].X = p.x
+	xys[0].Y = p.y
+	scatter, err = plotter.NewScatter(xys)
+	if err != nil {
+		return
+	}
+	scatter.GlyphStyle.Radius = vg.Points(5)
+	scatter.GlyphStyle.Shape = draw.SquareGlyph{}
+	scatter.GlyphStyle.Color = color.RGBA{R: 255, B: 128, A: 255}
+	return
 }
