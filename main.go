@@ -1,55 +1,95 @@
 package main
 
 import (
+	"bytes"
+	"encoding/csv"
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"path"
+	"strconv"
+	"strings"
 
-	"github.com/kicito/assignment-geo-2/geojson"
 	"github.com/kicito/assignment-geo-2/pointlocation"
 )
 
 func main() {
+	var filename string
+	flag.StringVar(&filename, "file", "./test.csv", "csv file to read")
+	flag.Parse()
 
-	result := geojson.ReadGeoJSON()
-	// _ = geojson.FeatureCollectionToGeoData(result)
-	geodatas := geojson.FeatureCollectionToGeoData(result)
+	fmt.Println("clearing image files")
+	dir, err := ioutil.ReadDir("./")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, d := range dir {
+		if strings.Contains(d.Name(), "png") {
+			os.RemoveAll(path.Join([]string{"./", d.Name()}...))
+		}
+	}
+	dir, err = ioutil.ReadDir("./steps")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, d := range dir {
+		if strings.Contains(d.Name(), "png") {
+			os.RemoveAll(path.Join([]string{"./steps", d.Name()}...))
+		}
+	}
 
-	// geodatas := []pointlocation.Segment{
-	// 	pointlocation.NewSegment(pointlocation.NewPoint(-8, 2), pointlocation.NewPoint(-5, 1)),
-	// 	pointlocation.NewSegment(pointlocation.NewPoint(-8, 2), pointlocation.NewPoint(-6, 4)),
-	// 	pointlocation.NewSegment(pointlocation.NewPoint(-5, 1), pointlocation.NewPoint(0, 4)),
-	// 	pointlocation.NewSegment(pointlocation.NewPoint(0, 4), pointlocation.NewPoint(-2, 7)),
-	// 	// pointlocation.NewSegment(pointlocation.NewPoint(-10, 6), pointlocation.NewPoint(2, 7)),
-	// 	// pointlocation.NewSegment(pointlocation.NewPoint(-10, 6), pointlocation.NewPoint(-4, 5)),
-	// 	// pointlocation.NewSegment(pointlocation.NewPoint(-6, 4), pointlocation.NewPoint(-4, 5)),
-	// }
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	csvReader := csv.NewReader(bytes.NewReader(content))
+
+	coorList, err := csvReader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+	sList := make([]pointlocation.Segment, len(coorList)-2)
+	indexNext := 1
+	for coorIndex := range coorList[:len(coorList)-2] {
+		latitude, err := strconv.ParseFloat(strings.TrimSpace(coorList[coorIndex][0]), 64)
+		logitude, err := strconv.ParseFloat(strings.TrimSpace(coorList[coorIndex][1]), 64)
+		latitudeNext, err := strconv.ParseFloat(strings.TrimSpace(coorList[indexNext][0]), 64)
+		logitudeNext, err := strconv.ParseFloat(strings.TrimSpace(coorList[indexNext][1]), 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		sList[coorIndex] = pointlocation.NewSegment(
+			pointlocation.NewPoint(latitude, logitude),
+			pointlocation.NewPoint(latitudeNext, logitudeNext),
+			strconv.Itoa(coorIndex),
+		)
+		indexNext++
+	}
+	pointX, err := strconv.ParseFloat(strings.TrimSpace(coorList[indexNext][0]), 64)
+	pointY, err := strconv.ParseFloat(strings.TrimSpace(coorList[indexNext][1]), 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	point := pointlocation.NewPoint(pointX, pointY)
+
+	// result := geojson.ReadGeoJSON()
+	// geodatas := geojson.FeatureCollectionToGeoData(result)
+
 	var pl pointlocation.PointLocation
-	var err error
 	// fmt.Println("----------------------")
 	// fmt.Println(geodatas[0].Segments)
 	// fmt.Println("----------------------")
-	if pl, err = pointlocation.NewPointLocation(geodatas[0].Segments); err != nil {
-		pl.PlotTrs("")
+	if pl, err = pointlocation.NewPointLocation(sList); err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	// if pl, err = pointlocation.NewPointLocation(geodatas); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// for trIndex := range pl.Trs {
-	// 	fmt.Println("----------------------")
-	// 	fmt.Println(pl.Trs[trIndex])
-	// 	fmt.Println("----------------------")
-	// }
-
-	// // // tr := pl.DAG.FindPoint(pointlocation.NewPoint(5, 3))
-	// tr := pl.DAG.FindPoint(pointlocation.NewPoint(-1, 7))
-	tr, err := pl.DAG.FindPoint(pointlocation.NewPoint(11.68008416891098, 56.20354114879276))
+	tr, err := pl.DAG.FindPoint(point)
 	if err != nil {
-		fmt.Println(pl)
-		pl.PlotTrsWithPoint("", pointlocation.NewPoint(11.68008416891098, 56.20354114879276))
 		log.Fatal(err)
 		return
 	}
@@ -59,7 +99,7 @@ func main() {
 	fmt.Println("----------------------")
 	fmt.Println(tr)
 	fmt.Println("----------------------")
-	err = pl.PlotTrsWithPoint("", pointlocation.NewPoint(11.68008416891098, 56.20354114879276))
+	_, err = pl.PlotTrsWithPoint("result", point)
 	if err != nil {
 		log.Fatal(err)
 	}

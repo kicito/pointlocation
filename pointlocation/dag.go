@@ -144,7 +144,7 @@ func (n yNode) String() string {
 }
 
 func (n yNode) check(p Point) (node, error) {
-	if n.s.startPoint.sameCoordinate(p) || n.s.endPoint.sameCoordinate(p) {
+	if n.s.startPoint.sameCoordinate(p) {
 		if *n.s.slope > *p.s.slope {
 			return n.rChild, nil
 		}

@@ -16,3 +16,8 @@ vendor/*
 
 raw_data/*
 !raw_data/.gitkeep
+
+steps/*
+!steps/.gitkeep
+
+*.png

@@ -13,21 +13,10 @@ type Segment struct {
 	endPoint   Point
 	slope      *float64
 	yIntercept *float64
+	label      string
 }
 
 func (s Segment) String() string {
-	// var slope string
-	// var yint string
-	// if s.slope == nil {
-	// 	slope = "-"
-	// } else {
-	// 	slope = fmt.Sprintf("%.2f", *s.slope)
-	// }
-	// if s.yIntercept == nil {
-	// 	yint = "-"
-	// } else {
-	// 	yint = fmt.Sprintf("%.2f", *s.yIntercept)
-	// }
 	return fmt.Sprintf("%+v -> %+v", s.startPoint, s.endPoint)
 }
 
@@ -172,7 +161,7 @@ func (s Segment) isSegmentIntersect(so Segment) bool {
 	return false
 }
 
-func NewSegment(start Point, end Point) Segment {
+func NewSegment(start Point, end Point, label string) Segment {
 	var slope *float64
 	var yIntercept *float64
 	// var swapFlag bool
@@ -205,6 +194,7 @@ func NewSegment(start Point, end Point) Segment {
 		endPoint:   end,
 		slope:      slope,
 		yIntercept: yIntercept,
+		label:      label,
 	}
 	s.startPoint.s = &s
 	s.endPoint.s = &s

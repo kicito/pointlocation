@@ -90,7 +90,7 @@ If  σ > τ, the orientation is clockwise (right turn)
 */
 func (p Point) orientationFromSegment(s Segment) (pos int) {
 	// fmt.Println("comparing Point", p, "with Segment", s)
-	slopeSegmentEndPointToPoint := NewSegment(s.endPoint, p).slope
+	slopeSegmentEndPointToPoint := NewSegment(s.endPoint, p, "").slope
 	if s.slope == nil {
 		if p.x == s.startPoint.x {
 			return colinear

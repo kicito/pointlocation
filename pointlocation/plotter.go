@@ -10,11 +10,11 @@ import (
 )
 
 func plotAddTr(p *plot.Plot, tr trapezoid) (err error) {
-	lp, rp, t, b, bl, br, err := tr.plotData()
+	lp, rp, t, b, bl, br, label, err := tr.plotData()
 	if err != nil {
 		return
 	}
-	p.Add(lp, rp, t, b, bl, br)
+	p.Add(lp, rp, t, b, bl, br, label)
 	return
 }
 
@@ -29,11 +29,11 @@ func PlotTr(filename string, tr trapezoid) {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	lp, rp, t, b, bl, br, err := tr.plotData()
+	lp, rp, t, b, bl, br, label, err := tr.plotData()
 	if err != nil {
 		log.Fatal("unable to get plot data ", err)
 	}
-	p.Add(lp, rp, t, b, bl, br)
+	p.Add(lp, rp, t, b, bl, br, label)
 	if filename == "" {
 		filename = "points"
 	}
@@ -56,11 +56,11 @@ func PlotTrNode(filename string, trNode node) {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	lp, rp, t, b, bl, br, err := trNode.(*trapezoidNode).tr.plotData()
+	lp, rp, t, b, bl, br, label, err := trNode.(*trapezoidNode).tr.plotData()
 	if err != nil {
 		log.Fatal("unable to get plot data ", err)
 	}
-	p.Add(lp, rp, t, b, bl, br)
+	p.Add(lp, rp, t, b, bl, br, label)
 	if filename == "" {
 		filename = "points"
 	}
@@ -82,11 +82,11 @@ func PlotTrNodeWithPoint(filename string, trNode node, pp Point) {
 	p.Y.Label.Text = "Y"
 	p.Add(plotter.NewGrid())
 
-	lp, rp, t, b, bl, br, err := trNode.(*trapezoidNode).tr.plotData()
+	lp, rp, t, b, bl, br, label, err := trNode.(*trapezoidNode).tr.plotData()
 	if err != nil {
 		log.Fatal("unable to get plot data ", err)
 	}
-	p.Add(lp, rp, t, b, bl, br)
+	p.Add(lp, rp, t, b, bl, br, label)
 
 	l, err := pp.scatter()
 	if err != nil {

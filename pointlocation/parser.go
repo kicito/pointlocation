@@ -2,6 +2,7 @@ package pointlocation
 
 import (
 	"log"
+	"strconv"
 
 	geojson "github.com/paulmach/go.geojson"
 )
@@ -22,7 +23,7 @@ func GeometryToSegments(f *geojson.Geometry) (results []Segment) {
 					x: f.Polygon[polygonIndex][pointIndex+1][0],
 					y: f.Polygon[polygonIndex][pointIndex+1][1],
 				}
-				results = append(results, NewSegment(startPoint, endPoint))
+				results = append(results, NewSegment(startPoint, endPoint, strconv.Itoa(pointIndex)))
 				startPoint = endPoint
 			}
 		}
@@ -43,7 +44,7 @@ func GeometryToSegments(f *geojson.Geometry) (results []Segment) {
 						y: f.MultiPolygon[multiPolygonIndex][polygonIndex][pointIndex+1][1],
 					}
 
-					results = append(results, NewSegment(startPoint, endPoint))
+					results = append(results, NewSegment(startPoint, endPoint, strconv.Itoa(pointIndex)))
 					startPoint = endPoint
 				}
 			}
@@ -62,7 +63,7 @@ func GeometryToSegments(f *geojson.Geometry) (results []Segment) {
 				x: f.LineString[lineStringIndex+1][0],
 				y: f.LineString[lineStringIndex+1][1],
 			}
-			results = append(results, NewSegment(startPoint, endPoint))
+			results = append(results, NewSegment(startPoint, endPoint, strconv.Itoa(lineStringIndex)))
 			startPoint = endPoint
 		}
 	} else {
