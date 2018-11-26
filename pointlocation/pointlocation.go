@@ -38,7 +38,7 @@ func NewPointLocation(ss []Segment) (pl PointLocation, err error) {
 		if err = pl.addSegment(ss[index], index); err != nil {
 			return pl, errors.Wrapf(err, "added segment %v\n adding segment %v\n", segmentAdded, ss[index])
 		}
-		pl.PlotTrs(fmt.Sprintf("./steps/[%v]4after add segment %v", index, ss[index]))
+		pl.PlotTrs(fmt.Sprintf("./steps/[%v]6after add segment %v", index, ss[index]))
 
 		segmentAdded = append(segmentAdded, ss[index])
 	}
@@ -267,7 +267,7 @@ func (pl *PointLocation) addSegment(s Segment, index int) (err error) {
 	}
 
 	for intersectIndex := range intersectedTrapeziods {
-		PlotTr(fmt.Sprintf("./steps/[%v]removing trapez[%v]", index, intersectIndex), intersectedTrapeziods[intersectIndex])
+		PlotTr(fmt.Sprintf("./steps/[%v]4removing trapezoid[%v]", index, intersectIndex), intersectedTrapeziods[intersectIndex])
 		if err = pl.removeTrapezoid(intersectedTrapeziods[intersectIndex]); err != nil {
 			return errors.Wrap(err, "unable to remove trapeziod from pointlocation list")
 		}
@@ -297,7 +297,7 @@ func (pl *PointLocation) addSegment(s Segment, index int) (err error) {
 	debugPl.Trs = append(debugPl.Trs, trTopList...)
 	debugPl.Trs = append(debugPl.Trs, trBotList...)
 
-	debugPl.PlotTrsWithSegment(fmt.Sprintf("./steps/[%v]3adding trapezoid %v", index, s), s)
+	debugPl.PlotTrsWithSegment(fmt.Sprintf("./steps/[%v]5adding trapezoid %v", index, s), s)
 
 	for intersectedIndex := range intersectedTrapeziods {
 		if err = pl.addTrapeziod(trTopList[intersectedIndex]); err != nil {

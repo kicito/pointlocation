@@ -30,6 +30,8 @@ func main() {
 			os.RemoveAll(path.Join([]string{"./", d.Name()}...))
 		}
 	}
+	_ = os.MkdirAll("./steps", os.ModePerm)
+
 	dir, err = ioutil.ReadDir("./steps")
 	if err != nil {
 		log.Fatal(err)
