@@ -42,6 +42,8 @@ func main() {
 		}
 	}
 
+	fmt.Println("reading file", filename)
+
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatal(err)
@@ -77,7 +79,7 @@ func main() {
 	}
 
 	point := pointlocation.NewPoint(pointX, pointY)
-
+	fmt.Println("search for ", point)
 	// result := geojson.ReadGeoJSON()
 	// geodatas := geojson.FeatureCollectionToGeoData(result)
 
